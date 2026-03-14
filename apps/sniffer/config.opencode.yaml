@@ -1,0 +1,17 @@
+# ─── OpenCode Sniffer Configuration ─────────────────────────────────────────
+# OpenCode uses GitHub Copilot API under the hood
+
+port: 8891
+auto_proxy: true
+
+capture_dir: ./logs/opencode/captured
+access_log_dir: ./logs/opencode/access
+
+filter_domains:
+  - api.github.com
+  - copilot-proxy.githubusercontent.com
+  - api.individual.githubcopilot.com
+  - api.business.githubcopilot.com
+  - api.enterprise.githubcopilot.com
+  - proxy.enterprise.githubcopilot.com
+  - githubcopilot.com

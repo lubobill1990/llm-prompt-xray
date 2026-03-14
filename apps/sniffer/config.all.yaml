@@ -1,0 +1,25 @@
+# ─── Capture All Traffic (no domain filter) ─────────────────────────────────
+
+port: 8888
+auto_proxy: true
+
+capture_dir: ./logs/all/captured
+access_log_dir: ./logs/all/access
+
+# No filter — capture everything
+filter_domains: []
+
+# Exclude noisy/irrelevant traffic from captured logs
+# (access log still records everything)
+exclude_domains:
+  - teams.events.data.microsoft.com
+  - monitor.azure.com
+  - sharepoint.com
+  - browser.events.data.microsoft.com
+  - mobile.events.data.microsoft.com
+  - teams.microsoft.com
+  - smartscreen.microsoft.com
+
+exclude_path_patterns:
+  - ^/OneCollector/
+  - ^/v1/engines/gpt-41-copilot/completions

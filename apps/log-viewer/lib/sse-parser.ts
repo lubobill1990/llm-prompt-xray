@@ -24,13 +24,27 @@ export function parseSSEStream(streamText: string): string {
       try {
         const data = JSON.parse(dataStr);
 
-        // Handle content_block_delta events with text
+        // Claude format: content_block_delta with delta.text
         if (data.type === 'content_block_delta' && data.delta?.text) {
           const index = data.index ?? 0;
           if (!contentBlocks[index]) {
             contentBlocks[index] = [];
           }
           contentBlocks[index].push(data.delta.text);
+        }
+
+        // OpenAI format: choices[].delta.content
+        if (data.choices) {
+          for (const choice of data.choices) {
+            const index = choice.index ?? 0;
+            const content = choice.delta?.content;
+            if (content) {
+              if (!contentBlocks[index]) {
+                contentBlocks[index] = [];
+              }
+              contentBlocks[index].push(content);
+            }
+          }
         }
       } catch (e) {
         // Ignore parse errors
@@ -56,7 +70,7 @@ export function parseSSEStreamToJSON(streamText: string): ParsedSSE {
   const lines = streamText.split('\n');
   const events: any[] = [];
   // Store content blocks by index for summary
-  const contentBlocks: Record<number, { type: string; text: string; name?: string }> = {};
+  const contentBlocks: Record<number, { type: string; text: string; name?: string; model?: string }> = {};
 
   for (const line of lines) {
     if (line.startsWith('event: ')) {
@@ -64,16 +78,20 @@ export function parseSSEStreamToJSON(streamText: string): ParsedSSE {
       events.push({ type: eventType });
     } else if (line.startsWith('data: ')) {
       const dataStr = line.substring(6).trim();
-      if (dataStr && dataStr !== '[DONE]' && events.length > 0) {
+      if (dataStr && dataStr !== '[DONE]') {
         try {
           const data = JSON.parse(dataStr);
-          events[events.length - 1].data = data;
+          if (events.length > 0 && !events[events.length - 1].data) {
+            events[events.length - 1].data = data;
+          } else {
+            events.push({ type: 'data', data });
+          }
 
-          // Track content blocks for summary
+          // ── Claude format ──
           if (data.type === 'content_block_start') {
             const index = data.index ?? 0;
             const blockType = data.content_block?.type || 'unknown';
-            const toolName = data.content_block?.name;  // Extract tool name for tool_use blocks
+            const toolName = data.content_block?.name;
             contentBlocks[index] = { type: blockType, text: '', name: toolName };
           } else if (data.type === 'content_block_delta' && data.delta?.text) {
             const index = data.index ?? 0;
@@ -87,6 +105,25 @@ export function parseSSEStreamToJSON(streamText: string): ParsedSSE {
               contentBlocks[index] = { type: 'tool_use', text: '' };
             }
             contentBlocks[index].text += data.delta.partial_json;
+          }
+
+          // ── OpenAI format ──
+          if (data.choices) {
+            for (const choice of data.choices) {
+              const index = choice.index ?? 0;
+              const content = choice.delta?.content;
+              const role = choice.delta?.role;
+              const model = data.model;
+              if (!contentBlocks[index]) {
+                contentBlocks[index] = { type: role || 'assistant', text: '', model };
+              }
+              if (content) {
+                contentBlocks[index].text += content;
+              }
+              if (model && !contentBlocks[index].model) {
+                contentBlocks[index].model = model;
+              }
+            }
           }
         } catch (e) {
           // Ignore parse errors
@@ -116,19 +153,15 @@ export function parseSSEStreamToJSON(streamText: string): ParsedSSE {
   };
 }
 
-export function isClaudeSSE(
+export function isSSEResponse(
   requestMetadata?: { headers: Record<string, string> },
   responseMetadata?: { headers: Record<string, string | string[]> }
 ): boolean {
-  if (!requestMetadata || !responseMetadata) return false;
+  if (!responseMetadata) return false;
 
-  const userAgent = requestMetadata.headers['user-agent'] || '';
   const contentType = Array.isArray(responseMetadata.headers['content-type'])
     ? responseMetadata.headers['content-type'][0]
     : responseMetadata.headers['content-type'];
 
-  return (
-    userAgent.includes('claude-cli') &&
-    contentType?.includes('text/event-stream')
-  );
+  return contentType?.includes('text/event-stream') ?? false;
 }

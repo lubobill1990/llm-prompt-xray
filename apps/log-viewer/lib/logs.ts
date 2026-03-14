@@ -78,9 +78,39 @@ async function decompressBuffer(buffer: Buffer, encoding: string): Promise<Buffe
   }
 }
 
-const LOG_DIR = path.join(process.cwd(), '..', '..', 'logs');
+export interface LogDirEntry {
+  name: string;
+  path: string;
+}
 
-export async function getLogEntries(startTime?: number, endTime?: number): Promise<LogEntry[]> {
+function getLogDirsFromEnv(): LogDirEntry[] {
+  const raw = process.env.LOG_DIRS;
+  if (raw) {
+    try {
+      return JSON.parse(raw) as LogDirEntry[];
+    } catch {
+      console.error('Failed to parse LOG_DIRS env variable');
+    }
+  }
+  // Fallback to legacy default
+  return [{ name: 'default', path: path.join(process.cwd(), '..', '..', 'logs') }];
+}
+
+export function getLogDirs(): LogDirEntry[] {
+  return getLogDirsFromEnv();
+}
+
+function resolveLogDir(dirName?: string): string {
+  const dirs = getLogDirsFromEnv();
+  if (dirName) {
+    const found = dirs.find(d => d.name === dirName);
+    if (found) return found.path;
+  }
+  return dirs[0]?.path || path.join(process.cwd(), '..', '..', 'logs');
+}
+
+export async function getLogEntries(startTime?: number, endTime?: number, dirName?: string): Promise<LogEntry[]> {
+  const LOG_DIR = resolveLogDir(dirName);
   const entries: LogEntry[] = [];
 
   try {
@@ -182,7 +212,8 @@ export async function getLogEntries(startTime?: number, endTime?: number): Promi
   return entries;
 }
 
-export async function getLogDetail(minuteDir: string, requestDir: string) {
+export async function getLogDetail(minuteDir: string, requestDir: string, dirName?: string) {
+  const LOG_DIR = resolveLogDir(dirName);
   const requestPath = path.join(LOG_DIR, minuteDir, requestDir);
 
   try {

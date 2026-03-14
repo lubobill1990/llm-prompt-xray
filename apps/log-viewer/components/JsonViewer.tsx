@@ -18,17 +18,24 @@ interface JsonNodeProps {
 
 // Store heights for different viewers
 const viewerHeights: Record<string, number> = {};
+// Store JSON paths for different viewers
+const viewerJsonPaths: Record<string, string> = {};
 
-// Load heights from localStorage on module load
+// Load heights and paths from localStorage on module load
 if (typeof window !== 'undefined') {
   try {
-    const saved = localStorage.getItem('jsonViewerHeights');
-    if (saved) {
-      const heights = JSON.parse(saved);
+    const savedHeights = localStorage.getItem('jsonViewerHeights');
+    if (savedHeights) {
+      const heights = JSON.parse(savedHeights);
       Object.assign(viewerHeights, heights);
     }
+    const savedPaths = localStorage.getItem('jsonViewerPaths');
+    if (savedPaths) {
+      const paths = JSON.parse(savedPaths);
+      Object.assign(viewerJsonPaths, paths);
+    }
   } catch (e) {
-    console.error('Error loading viewer heights:', e);
+    console.error('Error loading viewer settings:', e);
   }
 }
 
@@ -79,7 +86,7 @@ function JsonNode({ data, name, isLast = true, depth = 0, isDark = false }: Json
     return (
       <div className="flex items-start">
         {name && <span className="text-blue-600 dark:text-blue-400">&quot;{name}&quot;: </span>}
-        <span className="text-orange-600 dark:text-orange-400">&quot;{data}&quot;</span>
+        <span className="text-orange-600 dark:text-orange-400 break-all">&quot;{data}&quot;</span>
         {!isLast && <span>,</span>}
       </div>
     );
@@ -165,7 +172,7 @@ function JsonNode({ data, name, isLast = true, depth = 0, isDark = false }: Json
 }
 
 export default function JsonViewer({ data, isDark = false, id = 'default' }: JsonViewerProps) {
-  const [jsonPath, setJsonPath] = useState('');
+  const [jsonPath, setJsonPath] = useState(() => viewerJsonPaths[id] || '');
   const [filteredData, setFilteredData] = useState(data);
   const [height, setHeight] = useState(viewerHeights[id] || 384);
   const [isResizing, setIsResizing] = useState(false);
@@ -173,49 +180,160 @@ export default function JsonViewer({ data, isDark = false, id = 'default' }: Jso
   const startYRef = useRef(0);
   const startHeightRef = useRef(0);
 
-  // Update filteredData when data changes
-  useEffect(() => {
-    if (!jsonPath.trim()) {
-      setFilteredData(data);
-    } else {
-      handleJsonPathChange(jsonPath);
-    }
-  }, [data]);
+  // Helper function to handle array slice
+  const handleArraySlice = (arr: any[], sliceStr: string) => {
+    // Supports slice syntax: start:end (e.g. -3: for last 3, :5 for first 5, 1:3, -5:-2)
+    const sliceMatch = sliceStr.match(/^(-?\d*):(-?\d*)$/);
+    if (!sliceMatch) return null;
 
-  const handleJsonPathChange = (path: string) => {
-    setJsonPath(path);
+    const [, startStr, endStr] = sliceMatch;
+    let start = startStr === '' ? 0 : parseInt(startStr);
+    let end = endStr === '' ? arr.length : parseInt(endStr);
 
+    // Handle negative indices
+    if (start < 0) start = Math.max(0, arr.length + start);
+    if (end < 0) end = arr.length + end;
+
+    // Clamp values
+    start = Math.max(0, Math.min(arr.length, start));
+    end = Math.max(0, Math.min(arr.length, end));
+
+    return arr.slice(start, end);
+  };
+
+  // Apply JSONPath filter to data
+  const applyJsonPath = (path: string, sourceData: any) => {
     if (!path.trim()) {
-      setFilteredData(data);
-      return;
+      return sourceData;
     }
 
     try {
       // Simple JSONPath implementation
       const keys = path.replace(/^\$\.?/, '').split('.');
-      let current: any = data;
+      let current: any = sourceData;
 
       for (const key of keys) {
         if (key === '') continue;
 
-        // Handle array index
-        const arrayMatch = key.match(/^(\w+)\[(\d+)\]$/);
-        if (arrayMatch) {
-          const [, objKey, index] = arrayMatch;
-          current = current[objKey][parseInt(index)];
+        // Handle array slice like messages[-3:] or items[1:5]
+        const sliceMatch = key.match(/^(\w+)\[(-?\d*:-?\d*)\]$/);
+        if (sliceMatch) {
+          const [, objKey, sliceStr] = sliceMatch;
+          const arr = current[objKey];
+          if (!Array.isArray(arr)) {
+            return { error: 'Not an array' };
+          }
+          const result = handleArraySlice(arr, sliceStr);
+          if (result === null) {
+            return { error: 'Invalid slice syntax' };
+          }
+          current = result;
+        } else if (key.match(/^\[(-?\d*:-?\d*)\]$/)) {
+          // Handle standalone slice like [-3:] or [1:5]
+          const standaloneSliceMatch = key.match(/^\[(-?\d*:-?\d*)\]$/);
+          if (standaloneSliceMatch && Array.isArray(current)) {
+            const result = handleArraySlice(current, standaloneSliceMatch[1]);
+            if (result === null) {
+              return { error: 'Invalid slice syntax' };
+            }
+            current = result;
+          } else {
+            return { error: 'Not an array' };
+          }
         } else {
-          current = current[key];
+          // Handle array index (including negative index like [-1])
+          const arrayMatch = key.match(/^(\w+)\[(-?\d+)\]$/);
+          if (arrayMatch) {
+            const [, objKey, indexStr] = arrayMatch;
+            const arr = current[objKey];
+            if (!Array.isArray(arr)) {
+              return { error: 'Not an array' };
+            }
+            let index = parseInt(indexStr);
+            // Support negative index
+            if (index < 0) {
+              index = arr.length + index;
+            }
+            current = arr[index];
+          } else if (key.match(/^\[(-?\d+)\]$/)) {
+            // Handle standalone array index like [0] or [-1]
+            const indexMatch = key.match(/^\[(-?\d+)\]$/);
+            if (indexMatch && Array.isArray(current)) {
+              let index = parseInt(indexMatch[1]);
+              if (index < 0) {
+                index = current.length + index;
+              }
+              current = current[index];
+            } else {
+              return { error: 'Not an array' };
+            }
+          } else {
+            current = current[key];
+          }
         }
 
         if (current === undefined) {
-          setFilteredData({ error: 'Path not found' });
-          return;
+          return { error: 'Path not found' };
         }
       }
 
-      setFilteredData(current);
+      return current;
     } catch (e) {
-      setFilteredData({ error: 'Invalid path' });
+      return { error: 'Invalid path' };
+    }
+  };
+
+  // Apply multiple JSONPath filters and merge results
+  const applyMultipleJsonPaths = (pathsInput: string, sourceData: any) => {
+    if (!pathsInput.trim()) {
+      return sourceData;
+    }
+
+    // Split by comma or newline, trim each path
+    const paths = pathsInput
+      .split(/[,\n]/)
+      .map(p => p.trim())
+      .filter(p => p.length > 0);
+
+    if (paths.length === 0) {
+      return sourceData;
+    }
+
+    // Single path - return result directly
+    if (paths.length === 1) {
+      return applyJsonPath(paths[0], sourceData);
+    }
+
+    // Multiple paths - merge results into an object
+    const result: Record<string, any> = {};
+    for (const path of paths) {
+      const pathResult = applyJsonPath(path, sourceData);
+      // Use the path as key (simplified)
+      const key = path.replace(/^\$\.?/, '') || '$';
+      result[key] = pathResult;
+    }
+    return result;
+  };
+
+  // Update filteredData when data changes, applying saved path
+  useEffect(() => {
+    const savedPath = viewerJsonPaths[id] || '';
+    setJsonPath(savedPath);
+    setFilteredData(applyMultipleJsonPaths(savedPath, data));
+  }, [data, id]);
+
+  const handleJsonPathChange = (path: string) => {
+    setJsonPath(path);
+    setFilteredData(applyMultipleJsonPaths(path, data));
+
+    // Save to memory
+    viewerJsonPaths[id] = path;
+
+    // Save to localStorage
+    try {
+      localStorage.setItem('jsonViewerPaths', JSON.stringify(viewerJsonPaths));
+    } catch (e) {
+      console.error('Error saving viewer paths:', e);
     }
   };
 
@@ -265,7 +383,7 @@ export default function JsonViewer({ data, isDark = false, id = 'default' }: Jso
       <div>
         <input
           type="text"
-          placeholder="JSONPath filter (e.g., events[0].data)"
+          placeholder="JSONPath (e.g., messages[-1], use comma for multiple: model, messages[-3:])"
           value={jsonPath}
           onChange={(e) => handleJsonPathChange(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-sm font-mono"

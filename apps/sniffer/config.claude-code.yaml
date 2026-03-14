@@ -1,0 +1,11 @@
+# ─── Claude Code Sniffer Configuration ──────────────────────────────────────
+# Claude Code configured to proxy through llmapi.weavejam.com
+
+port: 8894
+auto_proxy: true
+
+capture_dir: ./logs/claude-code/captured
+access_log_dir: ./logs/claude-code/access
+
+filter_domains:
+  - llmapi.weavejam.com

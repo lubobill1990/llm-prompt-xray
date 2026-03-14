@@ -1,17 +1,22 @@
 [Unit]
-Description=Copilot API Server
+Description=Copilot API Service
 After=network.target
 
 [Service]
 Type=simple
-User=bolu1
-WorkingDirectory=/c/src/nodeproxy
-ExecStart=/usr/bin/npx copilot-api@latest start
+
+# ✅ 明确指定 npx 的绝对路径
+ExecStart=/home/lubo/.nvm/versions/node/v22.22.0/bin/npx copilot-api@latest start
+
+# 推荐指定工作目录
+WorkingDirectory=/home/lubo
+
+# 防止 npx 被 PATH / shell 影响
+Environment=NODE_ENV=production
+Environment=PATH=/home/lubo/.nvm/versions/node/v22.22.0/bin:/usr/bin:/bin
+
 Restart=always
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-SyslogIdentifier=copilot-api
+RestartSec=5
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target

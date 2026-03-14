@@ -2,7 +2,7 @@
 
 import { LogDetail } from '@/types/log';
 import { format } from 'date-fns';
-import { isClaudeSSE, parseSSEStreamToJSON, ParsedSSE, SSEContentBlock } from '@/lib/sse-parser';
+import { isSSEResponse, parseSSEStreamToJSON, ParsedSSE, SSEContentBlock } from '@/lib/sse-parser';
 import JsonViewer from './JsonViewer';
 
 interface RequestDetailProps {
@@ -19,7 +19,7 @@ export default function RequestDetail({ log, isDark = false }: RequestDetailProp
     );
   }
 
-  const isSSE = isClaudeSSE(log.requestMetadata, log.responseMetadata);
+  const isSSE = isSSEResponse(log.requestMetadata, log.responseMetadata);
   const parsedSSE = isSSE && typeof log.responseBody === 'string'
     ? parseSSEStreamToJSON(log.responseBody)
     : null;
@@ -144,7 +144,7 @@ export default function RequestDetail({ log, isDark = false }: RequestDetailProp
         </div>
         {isSSE && (
           <div className="mt-2 text-xs text-blue-600 dark:text-blue-400 font-medium">
-            Claude API SSE Stream Detected
+            SSE Stream Detected
           </div>
         )}
       </div>
@@ -152,7 +152,7 @@ export default function RequestDetail({ log, isDark = false }: RequestDetailProp
       {/* Two Column Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Column - Request */}
-        <div className="flex-1 flex flex-col border-r border-gray-200 dark:border-gray-700">
+        <div className="flex-1 min-w-0 flex flex-col border-r border-gray-200 dark:border-gray-700">
           <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <h2 className="font-semibold text-sm">Request</h2>
           </div>
@@ -184,7 +184,7 @@ export default function RequestDetail({ log, isDark = false }: RequestDetailProp
         </div>
 
         {/* Right Column - Response */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 min-w-0 flex flex-col">
           <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <h2 className="font-semibold text-sm">Response</h2>
           </div>

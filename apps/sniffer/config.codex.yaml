@@ -1,0 +1,12 @@
+# ─── OpenAI Codex CLI Sniffer Configuration ─────────────────────────────────
+
+port: 8892
+auto_proxy: true
+
+capture_dir: ./logs/codex/captured
+access_log_dir: ./logs/codex/access
+
+filter_domains:
+  - api.openai.com
+  - api.openai.com
+  - openai.com

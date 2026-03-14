@@ -1,6 +1,8 @@
 node_modules
 dist
-logs
+/logs
+apps/sniffer/logs
 *.log
 .env
 tsconfig.tsbuildinfo
+__pycache__

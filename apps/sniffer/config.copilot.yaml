@@ -1,0 +1,18 @@
+# ─── GitHub Copilot (VS Code) Sniffer Configuration ─────────────────────────
+
+port: 8893
+auto_proxy: true
+
+capture_dir: ./logs/copilot/captured
+access_log_dir: ./logs/copilot/access
+
+filter_domains:
+  - api.github.com
+  - copilot-proxy.githubusercontent.com
+  - api.individual.githubcopilot.com
+  - api.business.githubcopilot.com
+  - api.enterprise.githubcopilot.com
+  - proxy.enterprise.githubcopilot.com
+  - default.exp-tas.com
+  - copilot-telemetry.githubusercontent.com
+  - githubcopilot.com

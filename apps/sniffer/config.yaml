@@ -1,0 +1,39 @@
+# ─── HTTP(S) Sniffer Configuration ──────────────────────────────────────────
+
+# Proxy listen port
+port: 8888
+
+# Whether to automatically set Windows system proxy on start
+# and restore on exit
+auto_proxy: true
+
+# ─── Logging ────────────────────────────────────────────────────────────────
+
+# Directory for full request/response capture (metadata + body)
+# Each request gets its own subdirectory with request_metadata.json,
+# request_body.*, response_metadata.json, response_body.*
+capture_dir: ./captured_logs
+
+# Directory for nginx-style access log (one line per request, no body)
+# Log format: $time $remote_addr $method $url $status $response_size $duration "$user_agent"
+access_log_dir: ./access_logs
+
+# ─── Filtering ──────────────────────────────────────────────────────────────
+
+# Only capture traffic matching these domains (substring match).
+# Leave empty or remove to capture ALL traffic.
+# Use the "copilot" preset to auto-fill GitHub Copilot domains.
+#
+# Preset: "copilot" expands to all known Copilot domains
+# filter_domains:
+#   - copilot
+
+filter_domains:
+  - api.github.com
+  - copilot-proxy.githubusercontent.com
+  - api.individual.githubcopilot.com
+  - api.business.githubcopilot.com
+  - api.enterprise.githubcopilot.com
+  - default.exp-tas.com
+  - copilot-telemetry.githubusercontent.com
+  - githubcopilot.com

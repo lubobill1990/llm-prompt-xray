@@ -1,0 +1,32 @@
+# ─── Log Filter Configuration Example ───────────────────────────────────────
+# Usage: python filter_logs.py -c filter.example.yaml
+
+# Source directories (from a previous capture)
+input_dir: ./logs/all/captured
+access_input_dir: ./logs/all/access
+
+# Output directories (filtered results)
+output_dir: ./logs/opencode-filtered/captured
+access_output_dir: ./logs/opencode-filtered/access
+
+# Time range (optional, omit to include all)
+from: "2026-03-14T17:05"
+to: "2026-03-15T16:40"
+
+# Domain filter (substring match, omit or empty for all)
+filter_domains:
+  - api.github.com
+  - copilot-proxy.githubusercontent.com
+  - api.individual.githubcopilot.com
+  - api.business.githubcopilot.com
+  - api.enterprise.githubcopilot.com
+  - proxy.enterprise.githubcopilot.com
+  - githubcopilot.com
+
+# HTTP method filter (omit or empty for all)
+filter_methods:
+  - POST
+
+# Path regex filter (omit or empty for all)
+filter_path_patterns:
+  - /chat/completions
