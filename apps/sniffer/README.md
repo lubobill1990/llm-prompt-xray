@@ -126,15 +126,15 @@ uv run run.py --no-proxy
 ============================================================
   HTTP(S) Traffic Sniffer
 ============================================================
-  Config:      C:\src\nodeproxy\apps\sniffer\config.all.yaml
+  Config:      C:\src\llm-prompt-xray\apps\sniffer\config.all.yaml
   Proxy:       http://127.0.0.1:8888
-  Capture dir: C:\src\nodeproxy\apps\sniffer\logs\all\captured
-  Access log:  C:\src\nodeproxy\apps\sniffer\logs\all\access
+  Capture dir: C:\src\llm-prompt-xray\apps\sniffer\logs\all\captured
+  Access log:  C:\src\llm-prompt-xray\apps\sniffer\logs\all\access
   Filter:      (all traffic)
   Exclude:     teams.events.data.microsoft.com, monitor.azure.com, sharepoint.com
                ... and 4 more
   Sys proxy:   enabled
-  State file:  C:\src\nodeproxy\apps\sniffer\.proxy_state.json
+  State file:  C:\src\llm-prompt-xray\apps\sniffer\.proxy_state.json
 ============================================================
   Press Ctrl+C to stop
 ```

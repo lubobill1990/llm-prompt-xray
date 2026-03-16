@@ -13,7 +13,7 @@ This directory contains systemd service files for running the applications as sy
 ### 1. Build the applications first
 
 ```bash
-cd /c/src/nodeproxy
+cd /c/src/llm-prompt-xray
 yarn install
 yarn build
 ```
@@ -92,7 +92,7 @@ sudo systemctl disable copilot-api.service
 
 ### Proxy Service
 
-Edit `/c/src/nodeproxy/apps/proxy/.env` to configure:
+Edit `/c/src/llm-prompt-xray/apps/proxy/.env` to configure:
 - `PROXY_HOST` - Proxy server host (default: localhost)
 - `PROXY_PORT` - Proxy server port (default: 8080)
 - `TARGET_HOST` - Target server host
@@ -101,7 +101,7 @@ Edit `/c/src/nodeproxy/apps/proxy/.env` to configure:
 
 ### Log Viewer Service
 
-Edit `/c/src/nodeproxy/apps/log-viewer/.env` to configure:
+Edit `/c/src/llm-prompt-xray/apps/log-viewer/.env` to configure:
 - `PORT` - Log viewer port (default: 3001)
 
 ## Troubleshooting
@@ -132,5 +132,5 @@ sudo lsof -i :3001
 **Permission denied:**
 ```bash
 # Ensure correct ownership
-sudo chown -R bolu1:bolu1 /c/src/nodeproxy
+sudo chown -R bolu1:bolu1 /c/src/llm-prompt-xray
 ```

@@ -140,7 +140,7 @@ yarn dev
 ## 项目结构
 
 ```
-nodeproxy/
+llm-prompt-xray/
 ├── apps/
 │   ├── proxy/           # HTTP 代理服务器（Node.js + Hono）
 │   ├── sniffer/         # HTTPS 流量嗅探器（Python + mitmproxy）

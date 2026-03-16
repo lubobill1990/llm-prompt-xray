@@ -1,7 +1,7 @@
 {
-  "name": "nodeproxy-workspace",
+  "name": "llm-prompt-xray",
   "version": "1.0.0",
-  "description": "HTTP proxy logger with web viewer",
+  "description": "AI coding assistant traffic analyzer - capture, log, and visualize LLM API calls",
   "private": true,
   "workspaces": [
     "apps/proxy",

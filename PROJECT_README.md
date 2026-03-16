@@ -8,7 +8,7 @@ This project consists of two parts:
 ## Project Structure
 
 ```
-nodeproxy/
+llm-prompt-xray/
 ├── src/                      # Proxy server source code
 │   └── index.ts
 ├── logs/                     # Generated logs directory

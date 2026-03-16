@@ -2,10 +2,9 @@
 
 一个基于 **Next.js 16+** 的 Web 应用，用于可视化浏览和分析 HTTP 代理/嗅探器日志。专为 **AI 编程助手 API 流量**（Claude、OpenAI/Copilot 等）设计，支持 LLM 对话解析、SSE 流还原和多目录日志源切换。
 
-属于 `nodeproxy` monorepo 的一部分。
+属于 [`llm-prompt-xray`](https://github.com/lubobill1990/llm-prompt-xray) monorepo 的一部分。
 
-<!-- TODO: 添加实际截图 -->
-<!-- ![主界面截图](assets/screenshot-main.png) -->
+![System Prompt 查看](assets/screenshot-system-prompt.png)
 
 ---
 
@@ -167,7 +166,7 @@ JSON 数组格式，定义多个日志源目录。每个条目包含：
 **示例：**
 
 ```env
-LOG_DIRS=[{"name":"opencode-filtered","path":"C:\\src\\nodeproxy\\apps\\sniffer\\logs\\opencode-filtered\\captured"},{"name":"all","path":"C:\\src\\nodeproxy\\apps\\sniffer\\logs\\all\\captured"},{"name":"claude-planning","path":"C:\\src\\nodeproxy\\logs\\proxy"}]
+LOG_DIRS=[{"name":"proxy","path":"../../logs"},{"name":"sniffer-all","path":"../sniffer/logs/all/captured"}]
 ```
 
 > **注意**：Windows 路径中的反斜杠需要转义为 `\\`。
@@ -324,12 +323,23 @@ apps/log-viewer/
 
 ## 截图
 
-> 📌 待添加截图。将截图放置于 `assets/` 目录并取消上方注释即可显示。
+### System Prompt 查看
 
-<!-- ![主界面 - 请求列表](assets/screenshot-main.png) -->
-<!-- ![LLM 调用详情](assets/screenshot-llm-detail.png) -->
-<!-- ![JSON 查看器](assets/screenshot-json-viewer.png) -->
-<!-- ![暗色模式](assets/screenshot-dark-mode.png) -->
+查看 AI 编程助手发送给 LLM 的完整 system prompt：
+
+![System Prompt](assets/screenshot-system-prompt.png)
+
+### LLM 对话轮次
+
+逐条查看 user/assistant/tool 消息，包含 tool_use 和 tool_result 详情：
+
+![LLM Turn Message](assets/screenshot-llm-turn-message.png)
+
+### 工具列表
+
+查看 AI 助手注册的所有可用工具及其参数定义：
+
+![Tool Lists](assets/screenshot-tool-lists.png)
 
 ---
 

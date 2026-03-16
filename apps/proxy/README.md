@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-Proxy 是一个轻量级的 HTTP 代理服务器，用于**拦截、记录和转发** HTTP 请求与响应。它是 `nodeproxy` monorepo 的核心组件之一，专为分析 AI 编程助手（如 GitHub Copilot、Claude Code、OpenCode 等）的网络流量而设计。
+Proxy 是一个轻量级的 HTTP 代理服务器，用于**拦截、记录和转发** HTTP 请求与响应。它是 `llm-prompt-xray` monorepo 的核心组件之一，专为分析 AI 编程助手（如 GitHub Copilot、Claude Code、OpenCode 等）的网络流量而设计。
 
 所有经过代理的流量都会被完整保存到磁盘，包括请求/响应的元数据和消息体，便于后续通过 [log-viewer](../log-viewer) 进行可视化查看，或通过 [sniffer](../sniffer) 进行自动化分析。
 
